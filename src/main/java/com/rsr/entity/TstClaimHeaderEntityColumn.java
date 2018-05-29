@@ -8,10 +8,10 @@ public enum TstClaimHeaderEntityColumn {
 	 EMP_ID (Types.VARCHAR),
 	 CLAIM_DATE_FROM (Types.VARCHAR),
 	 COST_CENTRE (Types.VARCHAR),
-	 WHO_SETUP (Types.VARCHAR),
-	 DATE_SETUP (Types.DATE),
-	WHO_AMENDED (Types.VARCHAR),
-	DATE_AMENDED (Types.DATE);
+	 WHO_SETUP(Types.VARCHAR),
+	 DATE_SETUP(Types.TIMESTAMP),
+	WHO_AMENDED(Types.VARCHAR),
+	DATE_AMENDED(Types.TIMESTAMP),;
 	
 	private int columnType;
 	

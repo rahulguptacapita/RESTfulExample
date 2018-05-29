@@ -1,46 +1,25 @@
 package com.rsr.entity;
 
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.sql.Blob;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Random;
 
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.rsr.entity.DBEntity.DatabaseType;
-
 public class TstClaimHeaderEntity extends DBEntity {
 
-	public String claimId;
-	public String empId;
-	public String claimDateForm;
-	public String costCentre;
-	public String whoSetup;
-	public String dateSetup;
-	public String whoAmended;
-	public String dateAmended;
-
-	public JSONArray getEntity(String tableName) throws JSONException {
+	public JSONArray getEntities(String tableName) throws JSONException {
 		Connection conn = null;
 		Statement stat = null;
 		ResultSet rs = null;
 
 		JSONArray array = new JSONArray();
-
 		try {
 			conn = getConnection();
 			stat = conn.createStatement();
@@ -49,7 +28,6 @@ public class TstClaimHeaderEntity extends DBEntity {
 			while (rs.next()) {
 				JSONObject object = new JSONObject();
 				for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
-
 					if (rs.getObject(entityColumn.name()) != null) {
 						object.put(entityColumn.name(), getObjectForColumn(rs, entityColumn));
 					} else {
@@ -107,40 +85,19 @@ public class TstClaimHeaderEntity extends DBEntity {
 
 		try {
 			conn = getConnection();
-			
 			entity.remove(primaryKey);
 			entity.put(primaryKey, getRandomPrimaryKey());
-
-			
 			String sql = prepareQuery(tableName, primaryKey, entity);
 			System.out.println(sql);
-			// Statement stmt = conn.createStatement();
-			// stmt.executeUpdate(sql);
-
 			PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-			//int executeUpdate = pstmt.executeUpdate();
-			//doAnything();
-			
-			
-			 int index = 1;
-			 
-			 for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
-				 //setValues(pstmt, index, entityColumn.name(), entity.get(entityColumn.name()));
-			 	 pstmt.setObject(index,  entity.get(entityColumn.name()));
-				 index++;
-			 }
-			 
-//			 while (keys.hasNext()) {
-//				 String key = (String) keys.next();
-//				 
-//				// pstmt.setObject(index, x);
-//			 	 setValues(pstmt, index, key, entity.get(key));
-//			 	 index++;
-//			 }
-		 
+
+			int index = 1;
+			for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
+				pstmt.setObject(index, entity.get(entityColumn.name()));
+				index++;
+			}
+
 			pstmt.execute();
-			
-			
 			System.out.println(sql);
 
 		} catch (SQLException sqle) {
@@ -150,76 +107,16 @@ public class TstClaimHeaderEntity extends DBEntity {
 		}
 	}
 
-	private void setValues(PreparedStatement pstmt, int index, String key, Object value) throws SQLException {
-
-		TstClaimHeaderEntityColumn column = TstClaimHeaderEntityColumn.valueOf(key);
-		
-		switch (column.getColumnType()) {
-		case Types.VARCHAR:
-		case Types.LONGNVARCHAR:
-		case Types.CHAR:
-		case Types.NVARCHAR:
-		case Types.NCHAR:
-			pstmt.setString(index, (String) value);
-			break;
-		case Types.DATE:
-		case Types.TIME:
-		case Types.TIMESTAMP:
-			
-			pstmt.setDate(index, new Date(0l));
-			break;
-		case Types.INTEGER:
-		case Types.BIGINT:
-		case Types.SMALLINT:
-		case Types.TINYINT:
-		case Types.NUMERIC:
-			pstmt.setInt(index, (int) value);
-			break;
-		case Types.DOUBLE:
-			pstmt.setDouble(index, (Double) value);
-			
-			
-			break;
-		case Types.FLOAT:
-			pstmt.setFloat(index, (Float) value);
-			break;
-		default:
-			pstmt.setObject(index, value);
-		}
-	}
-
 	private String prepareQuery(String tableName, String primaryKey, JSONObject entity)
 			throws SQLException, JSONException {
+
 		String sql;
 		String columns = "(";
 		String values = "(";
 
 		for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
-
-	//		String val = "";
-
-//			if (primaryKey.equalsIgnoreCase(entityColumn.name())) {
-//				continue;
-//			}
-
-//			if (entity.get(entityColumn.name()) != null) {
-//				String tempString = (String) entity.get(entityColumn.name());
-//				if (tempString.isEmpty()) {
-//					continue;
-//				}
-//			} else {
-//				continue;
-//			}
-//
-//			if (entityColumn.getColumnType() == Types.INTEGER) {
-//				val = entity.get(entityColumn.name()) + "";
-//			} else {
-//				val = "'" + entity.get(entityColumn.name()) + "'";
-//			}
-
 			columns = columns + entityColumn.name();
-			//values = values + val;
-			 values = values + "?";
+			values = values + "?";
 			columns = columns + ",";
 			values = values + ",";
 		}
@@ -241,32 +138,144 @@ public class TstClaimHeaderEntity extends DBEntity {
 	}
 
 	@Override
-	public JSONArray deleteEntity(String tableName, String id) {
-		
-		
-		return null;
+	public JSONObject deleteEntity(String tableName, String id) throws JSONException {
+
+		Connection conn = null;
+		Statement stat = null;
+		ResultSet rs = null;
+
+		JSONObject result = new JSONObject();
+
+		try {
+			conn = getConnection();
+			stat = conn.createStatement();
+			String query = "delete from  " + tableName + " where claim_id like ?";
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, id);
+			int executeUpdate = pstmt.executeUpdate();
+
+			if (executeUpdate == 0) {
+				result.put("message", "No record found");
+				return result;
+			}
+
+		} catch (SQLException sqle) {
+			throw new RuntimeException(sqle.getMessage(), sqle);
+		} finally {
+			closeConn(conn, stat, rs);
+		}
+		result.put("message", "deleted successfully");
+		return result;
 	}
 
-	// @Override
-	// public String getPrimaryKey(String tableName) {
-	// Connection conn = null;
-	// Statement stat = null;
-	// ResultSet rs = null;
-	//
-	// try {
-	// conn = getConnection();
-	// DatabaseMetaData metaData = conn.getMetaData();
-	// rs = metaData.getPrimaryKeys(null, null, tableName);
-	//
-	// if(rs.next()) {
-	// return rs.getString(1);
-	// }
-	// return null;
-	// } catch (SQLException sqle) {
-	// throw new RuntimeException(sqle.getMessage(), sqle);
-	// } finally {
-	// closeConn(conn, stat, rs);
-	// }
-	// }
+	@Override
+	public JSONObject getEntity(String tableName, String id) throws JSONException {
+
+		Connection conn = null;
+		Statement stat = null;
+		ResultSet rs = null;
+
+		JSONObject object = new JSONObject();
+		try {
+			conn = getConnection();
+			stat = conn.createStatement();
+
+			String query = "select * from " + tableName + " where claim_id like ?";
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, id);
+
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
+					if (rs.getObject(entityColumn.name()) != null) {
+						object.put(entityColumn.name(), getObjectForColumn(rs, entityColumn));
+					} else {
+						object.put(entityColumn.name(), "");
+					}
+				}
+				return object;
+			}
+
+			object.put("message", "no recored found");
+			return object;
+
+		} catch (SQLException sqle) {
+			throw new RuntimeException(sqle.getMessage(), sqle);
+		} finally {
+			closeConn(conn, stat, rs);
+		}
+	}
+
+	@Override
+	public void putEntity(String tableName, String primaryKey, JSONObject entity, String id) throws JSONException {
+
+		Connection conn = null;
+		Statement stat = null;
+		ResultSet rs = null;
+
+		try {
+			conn = getConnection();
+			entity.remove(primaryKey);
+			entity.put(primaryKey, id);
+
+			String sql = prepareUpdateQuery(tableName, primaryKey, entity, id);
+			System.out.println(sql);
+
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			int index = 1;
+
+			for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
+				if (entityColumn.name().equalsIgnoreCase(primaryKey)) {
+					continue;
+				}
+				pstmt.setObject(index, entity.get(entityColumn.name()));
+				index++;
+			}
+
+			pstmt.setObject(index, id);
+			pstmt.execute();
+
+		} catch (SQLException sqle) {
+			throw new RuntimeException(sqle.getMessage(), sqle);
+		} finally {
+			closeConn(conn, stat, rs);
+		}
+	}
+
+	private String prepareUpdateQuery(String tableName, String primaryKey, JSONObject entity, String id)
+			throws JSONException {
+
+		String sql = "";
+
+		for (TstClaimHeaderEntityColumn entityColumn : TstClaimHeaderEntityColumn.values()) {
+			if (entityColumn.name().equalsIgnoreCase(primaryKey)) {
+				continue;
+			}
+			sql = sql + entityColumn.name() + " = " + "?,";
+		}
+		sql = sql.substring(0, sql.length() - 1);
+
+		String whereClause = " where " + primaryKey + " = " + "?";
+		String updateQuery = "UPDATE " + tableName + " SET " + sql + whereClause;
+		return updateQuery;
+	}
+
+	public void validateEntity(JSONObject entity, String primaryKey) throws JSONException {
+
+		for (TstClaimHeaderEntityColumn column : TstClaimHeaderEntityColumn.values()) {
+			if (primaryKey.equalsIgnoreCase(column.name())) {
+				continue;
+			}
+			Object columnValue = entity.get(column.name());
+			if (columnValue == null) {
+				throw new RuntimeException("cannot find " + column.name());
+			}
+		}
+		if (TstClaimHeaderEntityColumn.values().length != entity.length()
+				&& TstClaimHeaderEntityColumn.values().length - 1 == entity.length()) {
+			throw new RuntimeException("More then enough parameter found ");
+		}
+	}
 
 }
