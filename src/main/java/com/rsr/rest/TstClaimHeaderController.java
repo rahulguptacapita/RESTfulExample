@@ -81,8 +81,11 @@ public class TstClaimHeaderController {
 		
 		DBEntity dbEntity = new TstClaimHeaderEntity();
 		dbEntity.validateEntity(entity, PRIMARY_KEY);
-
 		JSONObject getResponseEntity = dbEntity.getEntity(TABLE_NAME, id);
+		if(getResponseEntity == null) {
+			return Response.status(400).entity("").build();
+		}
+		
 		if(getResponseEntity.has("message")) {
 			String s = (String) getResponseEntity.get("message");
 			if(s.equalsIgnoreCase("no recored found")) {
