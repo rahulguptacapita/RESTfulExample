@@ -274,7 +274,7 @@ public class TstClaimHeaderEntity extends DBEntity {
 		}
 		if (TstClaimHeaderEntityColumn.values().length != entity.length()
 				&& TstClaimHeaderEntityColumn.values().length - 1 == entity.length()) {
-			throw new RuntimeException("More then enough parameter found ");
+			throw new RuntimeException("More then enough parameter found");
 		}
 	}
 

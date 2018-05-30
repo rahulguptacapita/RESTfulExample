@@ -44,8 +44,20 @@ public class TstClaimHeaderController {
 	public Response getEntity(@PathParam("id") String id) throws JsonGenerationException, JsonMappingException, IOException, JSONException {
 		
 		DBEntity entity = new TstClaimHeaderEntity();
-		JSONObject jsonEntity = entity.getEntity(TABLE_NAME, id);
-		return Response.status(200).entity(jsonEntity).build();
+		JSONObject getResponseEntity = entity.getEntity(TABLE_NAME, id);
+		
+		if(getResponseEntity == null) {
+			return Response.status(204).entity("").build();
+		}
+		
+		if(getResponseEntity.has("message")) {
+			String s = (String) getResponseEntity.get("message");
+			if(s.equalsIgnoreCase("no recored found")) {
+				return Response.status(400).entity(getResponseEntity).build();
+			}
+		}
+
+		return Response.status(200).entity(getResponseEntity).build();
 	}
 	
 	@POST
@@ -57,7 +69,7 @@ public class TstClaimHeaderController {
 		DBEntity dbEntity = new TstClaimHeaderEntity();
 		dbEntity.validateEntity(entity, PRIMARY_KEY);
 		dbEntity.postEntity(TABLE_NAME, PRIMARY_KEY, entity);
-		return Response.status(200).entity(entity).build();
+		return Response.status(201).entity(entity).build();
 	}
 	
 	@DELETE
@@ -66,8 +78,19 @@ public class TstClaimHeaderController {
 	public Response deleteEntity(@PathParam("id") String id) throws JsonGenerationException, JsonMappingException, IOException, JSONException {
 		
 		DBEntity entity = new TstClaimHeaderEntity();
-		JSONObject jsonEntity = entity.deleteEntity(TABLE_NAME, id);
-		return Response.status(200).entity(jsonEntity).build();
+		JSONObject delJsonEntity = entity.deleteEntity(TABLE_NAME, id);
+		
+		if(delJsonEntity == null) {
+			return Response.status(204).entity("").build();
+		}
+		
+		if(delJsonEntity.has("message")) {
+			String s = (String) delJsonEntity.get("message");
+			if(s.equalsIgnoreCase("no recored found")) {
+				return Response.status(204).entity(delJsonEntity).build();
+			}
+		}
+		return Response.status(200).entity(delJsonEntity).build();
 	}
 	
 	
@@ -83,13 +106,13 @@ public class TstClaimHeaderController {
 		dbEntity.validateEntity(entity, PRIMARY_KEY);
 		JSONObject getResponseEntity = dbEntity.getEntity(TABLE_NAME, id);
 		if(getResponseEntity == null) {
-			return Response.status(400).entity("").build();
+			return Response.status(204).entity("").build();
 		}
 		
 		if(getResponseEntity.has("message")) {
 			String s = (String) getResponseEntity.get("message");
 			if(s.equalsIgnoreCase("no recored found")) {
-				return Response.status(200).entity(getResponseEntity).build();
+				return Response.status(204).entity(getResponseEntity).build();
 			}
 		}
 		dbEntity.putEntity(TABLE_NAME, PRIMARY_KEY, entity, id);
