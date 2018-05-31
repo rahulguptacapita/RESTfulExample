@@ -86,7 +86,7 @@ public class TstClaimHeaderEntity extends DBEntity {
 		try {
 			conn = getConnection();
 			entity.remove(primaryKey);
-			entity.put(primaryKey, getRandomPrimaryKey());
+			entity.put(primaryKey, getNextNo(conn, tableName, primaryKey, primaryKey));
 			String sql = prepareQuery(tableName, primaryKey, entity);
 			System.out.println(sql);
 			PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
